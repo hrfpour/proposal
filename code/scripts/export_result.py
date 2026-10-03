@@ -78,7 +78,23 @@ def describe(x):
     return d
 
 
-def recompute(run_dir, null_val):
+def load_array(path, horizon, nodes):
+    """BasicTS 1.0 writes test_results/*.npy as RAW float32 dumps (no .npy header) -> shape (N, horizon, nodes).
+    Evidence (PEMS04): size = 3376*12*307*4 bytes, no b'\\x93NUMPY' magic, first values 104.8 / 112.0 (flows).
+    A normal .npy file (with header) is also accepted."""
+    import numpy as np
+    with open(path, "rb") as f:
+        magic = f.read(6)
+    if magic == b"\x93NUMPY":
+        return to_array(np.load(path, allow_pickle=True)), "npy"
+    raw = np.fromfile(path, dtype="<f4")
+    per_sample = horizon * nodes
+    if raw.size % per_sample:
+        raise ValueError(f"{raw.size} floats is not a multiple of horizon*nodes={per_sample}")
+    return raw.reshape(-1, horizon, nodes), "raw_float32"
+
+
+def recompute(run_dir, null_val, horizon, nodes):
     """Independent metrics from the saved arrays. Never raises: returns {'error': ..., 'describe': ...}."""
     try:
         import numpy as np
@@ -87,16 +103,14 @@ def recompute(run_dir, null_val):
     d = Path(run_dir) / "test_results"
     if not (d / "prediction.npy").exists() or not (d / "targets.npy").exists():
         return {"error": "test_results/prediction.npy or targets.npy not found"}
-    raw = {}
     try:
-        raw["prediction"] = np.load(d / "prediction.npy", allow_pickle=True)   # our own files -> safe
-        raw["targets"] = np.load(d / "targets.npy", allow_pickle=True)
-        p = to_array(raw["prediction"]).astype("float64")
-        t = to_array(raw["targets"]).astype("float64")
-    except Exception as e:                                                      # show what the files really contain
-        return {"error": f"{type(e).__name__}: {e}",
-                "describe": {k: describe(v) for k, v in raw.items()}}
-    info = {"prediction_shape": list(p.shape), "targets_shape": list(t.shape)}
+        p, kind_p = load_array(d / "prediction.npy", horizon, nodes)
+        t, kind_t = load_array(d / "targets.npy", horizon, nodes)
+        p, t = p.astype("float64"), t.astype("float64")
+    except Exception as e:
+        return {"error": f"{type(e).__name__}: {e}"}
+    info = {"prediction_shape": list(p.shape), "targets_shape": list(t.shape),
+            "file_format": kind_p, "layout_assumed": "(samples, horizon, nodes)"}
     if p.shape != t.shape:
         return {**info, "error": "shape mismatch"}
 
@@ -110,10 +124,15 @@ def recompute(run_dir, null_val):
                 "mape": float((np.abs(e) / np.abs(tt[mask])).mean())}
 
     out = {**info, "null_val": null_val, "overall": metrics(p, t), "horizons": {}}
-    if p.ndim >= 3:
-        for h in (3, 6, 12):
-            if h <= p.shape[1]:
-                out["horizons"][f"h{h}"] = metrics(p[:, h - 1], t[:, h - 1])
+    per_h = [metrics(p[:, h], t[:, h]) for h in range(p.shape[1])]
+    out["mae_by_horizon"] = [round(x["mae"], 4) if x else None for x in per_h]
+    maes = [x["mae"] for x in per_h if x]
+    # If the layout assumption is right, error should (mostly) grow with the horizon.
+    out["mae_grows_with_horizon"] = bool(len(maes) > 1 and maes[-1] > maes[0] and
+                                         sum(b >= a for a, b in zip(maes, maes[1:])) >= 0.8 * (len(maes) - 1))
+    for h in (3, 6, 12):
+        if h <= p.shape[1]:
+            out["horizons"][f"h{h}"] = per_h[h - 1]
     return out
 
 
@@ -126,6 +145,8 @@ def main():
     ap.add_argument("--epochs", type=int, default=None)
     ap.add_argument("--device", default=None, help="cpu | gpu (for the record)")
     ap.add_argument("--null-val", type=float, default=0.0)
+    ap.add_argument("--output-len", type=int, default=12)
+    ap.add_argument("--num-nodes", type=int, default=None, help="default: num_vars from datasets/<dataset>/meta.json")
     ap.add_argument("--status", default="done", help="done | smoke_test | pending")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
@@ -154,7 +175,11 @@ def main():
     epochs_trained = sum(len(TRAIN_RESULT.findall(t)) for t in texts)
     params = next((PARAMS.findall(t)[0] for t in texts if PARAMS.findall(t)), None)
 
-    rec = recompute(run_dir, a.null_val)
+    nodes = a.num_nodes
+    if nodes is None:
+        meta = Path(a.ckpt_root).resolve().parent / "datasets" / a.dataset / "meta.json"
+        nodes = json.loads(meta.read_text())["num_vars"] if meta.exists() else None
+    rec = recompute(run_dir, a.null_val, a.output_len, nodes) if nodes else {"error": "num_nodes unknown (pass --num-nodes)"}
     bt = {"mae": m["MAE"], "rmse": m["RMSE"], "mape": m["MAPE"]}
     check = None
     if rec.get("overall"):
@@ -192,6 +217,7 @@ def main():
     if rec.get("overall"):
         print("Recomputed:", {k: round(v, 4) for k, v in rec["overall"].items()})
         print("Rel. diff :", {k: f"{v:.2%}" for k, v in check.items()})
+        print("MAE by horizon:", rec.get("mae_by_horizon"), "| grows with horizon:", rec.get("mae_grows_with_horizon"))
         for h, v in result["horizon_metrics"].items():
             print(f"  {h}:", {k: round(x, 4) for k, x in v.items()})
     else:
