@@ -1,0 +1,14 @@
+# data & checkpoints never go to git
+data/raw/
+data/processed/
+*.npz
+*.pt
+*.pth
+checkpoints/
+# python / node
+__pycache__/
+.ipynb_checkpoints/
+node_modules/
+.next/
+out/
+.env

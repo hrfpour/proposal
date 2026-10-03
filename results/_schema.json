@@ -1,0 +1,14 @@
+{
+  "_comment": "One file per run: results/<model>_<dataset>_seed<k>.json",
+  "model": "AGCRN",
+  "dataset": "PEMS04",
+  "seed": 0,
+  "source": "reproduced | paper",
+  "status": "done | pending",
+  "commit": "git sha of code used",
+  "config": "code/configs/agcrn_pems04.py",
+  "point_metrics": { "mae": null, "rmse": null, "mape": null },
+  "horizon_metrics": { "h3": {}, "h6": {}, "h12": {} },
+  "uq_metrics": { "picp": null, "mpiw": null, "nll": null },
+  "train_time_s": null
+}
