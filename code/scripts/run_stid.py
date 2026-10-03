@@ -19,6 +19,24 @@ sys.path.insert(0, str(BT / "src"))
 os.chdir(BT)                                 # BasicTS looks for datasets/<name> and writes checkpoints/ here
 
 
+def patch_zscore_scaler():
+    """Work around a BasicTS 1.0 bug (commit c2bb6e3): with norm_each_channel=False the mean/std are
+    numpy scalars and `torch.Tensor(<numpy scalar>)` raises
+    'TypeError: new(): data must be a sequence (got numpy.float32)'.
+    Fix: build the tensors with torch.as_tensor. Applied to the working copy in Colab only."""
+    f = BT / "src" / "basicts" / "scaler" / "z_score_scaler.py"
+    old = "torch.Tensor(mean), torch.Tensor(std)"
+    new = "torch.as_tensor(mean, dtype=torch.float32), torch.as_tensor(std, dtype=torch.float32)"
+    text = f.read_text()
+    if old in text:
+        f.write_text(text.replace(old, new))
+        print("PATCH applied: z_score_scaler.py (torch.Tensor -> torch.as_tensor)")
+    elif new in text:
+        print("PATCH already applied: z_score_scaler.py")
+    else:
+        print("WARNING: expected line not found in z_score_scaler.py; BasicTS code may have changed")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", default="PEMS04")
@@ -29,6 +47,8 @@ def main():
     ap.add_argument("--lr", type=float, default=0.002)
     ap.add_argument("--seed", type=int, default=42)
     a = ap.parse_args()
+
+    patch_zscore_scaler()   # must run before basicts is imported
 
     import numpy as np
     import torch
