@@ -1,1 +1,479 @@
-[]
+{
+  "meta": {
+    "title": "Models compared in the base paper (Li et al., Symmetry 2025, 17, 1007) + DGCRN building block",
+    "generated": "2026-10-03",
+    "metrics_source": "Table 2 of the base paper (PEMS04, 12-step average). These are paper-reported numbers, NOT reproduced by us.",
+    "verification_legend": {
+      "verified_2026-10-03": "paper confirmed by web search AND the code repo confirmed as the authors' (or named in the paper / listed as official)",
+      "paper_verified_repo_reachable_2026-10-03": "paper confirmed by web search; repo URL returned HTTP 200 in your check_links run but its ownership was not independently confirmed",
+      "from_memory": "not checked (none left after this update)"
+    },
+    "stages": {
+      "1": "Statistical baselines",
+      "2": "Deep learning without graph structure",
+      "3": "STGNN with predefined graph",
+      "4": "Learned / adaptive graph",
+      "5": "Fusion, continuous-time, topology",
+      "6": "Recent dynamic-graph models"
+    }
+  },
+  "models": [
+    {
+      "id": "ha",
+      "order": 1,
+      "stage": 1,
+      "name": "HA",
+      "year": null,
+      "venue": "Textbook (cited as ref. [9] in base paper: Hamilton, Princeton Univ. Press)",
+      "paper": {
+        "title": "Time Series Analysis",
+        "first_author": "Hamilton",
+        "doi": null,
+        "url": null
+      },
+      "new_fa": "میانگین تاریخی هر فصل/ساعت به‌عنوان پیش‌بینی؛ کمترین سطح پایه",
+      "weakness_fa": "هیچ الگوی غیرخطی یا مکانی را نمی‌بیند",
+      "code": {
+        "repo": null,
+        "status": "trivial",
+        "note": "A few lines of numpy; no repo needed"
+      },
+      "reported_pems04": {
+        "mae": 38.03,
+        "rmse": 59.24,
+        "mape": 27.88
+      },
+      "verification": "verified_2026-10-03"
+    },
+    {
+      "id": "var",
+      "order": 2,
+      "stage": 1,
+      "name": "VAR",
+      "year": null,
+      "venue": "Textbook (cited as ref. [9] in base paper: Hamilton, Princeton Univ. Press)",
+      "paper": {
+        "title": "Time Series Analysis",
+        "first_author": "Hamilton",
+        "doi": null,
+        "url": null
+      },
+      "new_fa": "خودرگرسیون برداری: همبستگی خطی میان سنسورها را وارد می‌کند",
+      "weakness_fa": "خطی است؛ با تغییرات ناگهانی ترافیک ناتوان",
+      "code": {
+        "repo": "statsmodels/statsmodels",
+        "status": "library",
+        "note": "statsmodels.tsa.api.VAR"
+      },
+      "reported_pems04": {
+        "mae": 24.54,
+        "rmse": 38.61,
+        "mape": 17.24
+      },
+      "verification": "verified_2026-10-03"
+    },
+    {
+      "id": "dsanet",
+      "order": 3,
+      "stage": 2,
+      "name": "DSANet",
+      "year": 2019,
+      "venue": "CIKM 2019",
+      "paper": {
+        "title": "DSANet: Dual Self-Attention Network for Multivariate Time Series Forecasting",
+        "first_author": "Huang",
+        "doi": "10.1145/3357384.3358132",
+        "url": "https://doi.org/10.1145/3357384.3358132"
+      },
+      "new_fa": "دو شاخهٔ کانولوشن زمانی (سراسری و محلی) + خودتوجهی میان سری‌ها + مؤلفهٔ خطی AR",
+      "weakness_fa": "توپولوژی شبکهٔ جاده را نمی‌شناسد",
+      "code": {
+        "repo": "bighuang624/DSANet",
+        "status": "unmaintained",
+        "note": "README says the project is no longer maintained (pytorch-lightning incompatibility)"
+      },
+      "reported_pems04": {
+        "mae": 22.79,
+        "rmse": 35.77,
+        "mape": 16.03
+      },
+      "verification": "verified_2026-10-03"
+    },
+    {
+      "id": "dcrnn",
+      "order": 4,
+      "stage": 3,
+      "name": "DCRNN",
+      "year": 2018,
+      "venue": "ICLR 2018",
+      "paper": {
+        "title": "Diffusion Convolutional Recurrent Neural Network: Data-Driven Traffic Forecasting",
+        "first_author": "Li",
+        "doi": null,
+        "url": "https://arxiv.org/abs/1707.01926"
+      },
+      "new_fa": "کانولوشن انتشاری روی گراف جهت‌دار + GRU در ساختار انکودر-دیکودر؛ آغاز دورهٔ STGNN",
+      "weakness_fa": "گراف ثابت و از پیش‌تعریف‌شده؛ پیش‌بینی تکراری و انباشت خطا",
+      "code": {
+        "repo": "liyaguang/DCRNN",
+        "status": "official",
+        "note": "TensorFlow original"
+      },
+      "reported_pems04": {
+        "mae": 21.22,
+        "rmse": 33.44,
+        "mape": 14.17
+      },
+      "verification": "paper_verified_repo_reachable_2026-10-03"
+    },
+    {
+      "id": "astgcn",
+      "order": 5,
+      "stage": 3,
+      "name": "ASTGCN",
+      "year": 2019,
+      "venue": "AAAI 2019, vol. 33(1), pp. 922-929",
+      "paper": {
+        "title": "Attention Based Spatial-Temporal Graph Convolutional Networks for Traffic Flow Forecasting",
+        "first_author": "Guo",
+        "doi": "10.1609/aaai.v33i01.3301922",
+        "url": "https://doi.org/10.1609/aaai.v33i01.3301922"
+      },
+      "new_fa": "توجه فضایی و زمانی + سه مؤلفهٔ ساعتی/روزانه/هفتگی؛ معرفی PEMS04 و PEMS08",
+      "weakness_fa": "همچنان به گراف ثابت وابسته است",
+      "code": {
+        "repo": "guoshnBJTU/ASTGCN-r-pytorch",
+        "status": "official",
+        "note": "PyTorch version by the paper's author; original MXNet repo is Davidham3/ASTGCN"
+      },
+      "reported_pems04": {
+        "mae": 22.92,
+        "rmse": 35.22,
+        "mape": 16.56
+      },
+      "verification": "paper_verified_repo_reachable_2026-10-03"
+    },
+    {
+      "id": "lsgcn",
+      "order": 6,
+      "stage": 3,
+      "name": "LSGCN",
+      "year": 2020,
+      "venue": "IJCAI 2020, pp. 2355-2361",
+      "paper": {
+        "title": "LSGCN: Long Short-Term Traffic Prediction with Graph Convolutional Networks",
+        "first_author": "Huang",
+        "doi": "10.24963/ijcai.2020/326",
+        "url": "https://doi.org/10.24963/ijcai.2020/326"
+      },
+      "new_fa": "شبکهٔ توجه گرافی cosAtt + بلوک فضایی دروازه‌ای + GLU برای پیش‌بینی کوتاه و بلندمدت",
+      "weakness_fa": "گراف ثابت",
+      "code": {
+        "repo": null,
+        "status": "none_found",
+        "note": "No official repo found by search; available as re-implementation inside BasicTS/LibCity (check)"
+      },
+      "reported_pems04": {
+        "mae": 21.53,
+        "rmse": 33.86,
+        "mape": 13.18
+      },
+      "verification": "verified_2026-10-03"
+    },
+    {
+      "id": "stsgcn",
+      "order": 7,
+      "stage": 3,
+      "name": "STSGCN",
+      "year": 2020,
+      "venue": "AAAI 2020, vol. 34(1), pp. 914-921",
+      "paper": {
+        "title": "Spatial-Temporal Synchronous Graph Convolutional Networks: A New Framework for Spatial-Temporal Network Data Forecasting",
+        "first_author": "Song",
+        "doi": "10.1609/aaai.v34i01.5438",
+        "url": "https://doi.org/10.1609/aaai.v34i01.5438"
+      },
+      "new_fa": "گراف فضا-زمان همزمان: لبهٔ زمانی داخل خود گراف قرار می‌گیرد",
+      "weakness_fa": "هزینهٔ زیاد؛ گراف از پیش‌تعریف‌شده",
+      "code": {
+        "repo": "Davidham3/STSGCN",
+        "status": "official",
+        "note": "MXNet"
+      },
+      "reported_pems04": {
+        "mae": 21.19,
+        "rmse": 33.65,
+        "mape": 13.9
+      },
+      "verification": "verified_2026-10-03"
+    },
+    {
+      "id": "agcrn",
+      "order": 8,
+      "stage": 4,
+      "name": "AGCRN",
+      "year": 2020,
+      "venue": "NeurIPS 2020 (vol. 33)",
+      "paper": {
+        "title": "Adaptive Graph Convolutional Recurrent Network for Traffic Forecasting",
+        "first_author": "Bai",
+        "doi": null,
+        "url": "https://arxiv.org/abs/2007.02842"
+      },
+      "new_fa": "گراف تطبیقی E·Eᵀ + پارامتر مخصوص هر گره (NAPL) + GRU",
+      "weakness_fa": "گراف یادگیری‌شده در طول زمان تغییر نمی‌کند",
+      "code": {
+        "repo": "LeiBAI/AGCRN",
+        "status": "official",
+        "note": "Base of the base paper's AGCN part"
+      },
+      "reported_pems04": {
+        "mae": 19.83,
+        "rmse": 32.26,
+        "mape": 12.97
+      },
+      "verification": "verified_2026-10-03"
+    },
+    {
+      "id": "stfgnn",
+      "order": 9,
+      "stage": 5,
+      "name": "STFGNN",
+      "year": 2021,
+      "venue": "AAAI 2021, vol. 35(5), pp. 4189-4196",
+      "paper": {
+        "title": "Spatial-Temporal Fusion Graph Neural Networks for Traffic Flow Forecasting",
+        "first_author": "Li",
+        "doi": "10.1609/aaai.v35i5.16542",
+        "url": "https://doi.org/10.1609/aaai.v35i5.16542"
+      },
+      "new_fa": "گراف زمانی از روی DTW و ادغام آن با گراف مکانی",
+      "weakness_fa": "گراف از قبل ساخته می‌شود و انتها به انتها یاد گرفته نمی‌شود",
+      "code": {
+        "repo": "MengzhangLI/STFGNN",
+        "status": "official",
+        "note": ""
+      },
+      "reported_pems04": {
+        "mae": 20.48,
+        "rmse": 32.51,
+        "mape": 16.77
+      },
+      "report_warning": "MAPE 16.77 equals STFGNN's PEMS03 MAE in the base paper's Table 2; likely a copy/typo error",
+      "verification": "paper_verified_repo_reachable_2026-10-03"
+    },
+    {
+      "id": "stgode",
+      "order": 10,
+      "stage": 5,
+      "name": "STGODE",
+      "year": 2021,
+      "venue": "KDD 2021, pp. 364-373",
+      "paper": {
+        "title": "Spatial-Temporal Graph ODE Networks for Traffic Flow Forecasting",
+        "first_author": "Fang",
+        "doi": null,
+        "url": "https://arxiv.org/abs/2106.12931"
+      },
+      "new_fa": "ODE گرافی برای رفع over-smoothing در شبکه‌های عمیق",
+      "weakness_fa": "گراف ایستا؛ هزینهٔ حل‌گر ODE",
+      "code": {
+        "repo": "square-coder/STGODE",
+        "status": "official",
+        "note": "Owner is 'square-coder' (with r). Named in the paper's footnote; datasets: see STSGCN's download instructions"
+      },
+      "reported_pems04": {
+        "mae": 20.84,
+        "rmse": 32.82,
+        "mape": 13.77
+      },
+      "verification": "verified_2026-10-03"
+    },
+    {
+      "id": "zgcnets",
+      "order": 11,
+      "stage": 5,
+      "name": "Z-GCNETs",
+      "year": 2021,
+      "venue": "ICML 2021, PMLR 139:1684-1694",
+      "paper": {
+        "title": "Z-GCNETs: Time Zigzags at Graph Convolutional Networks for Time Series Forecasting",
+        "first_author": "Chen",
+        "doi": null,
+        "url": "https://proceedings.mlr.press/v139/chen21o.html"
+      },
+      "new_fa": "ویژگی‌های توپولوژیک (zigzag persistence image) به‌عنوان لایهٔ زمان-آگاه در GCN",
+      "weakness_fa": "پیچیدگی محاسبهٔ ویژگی‌های توپولوژیک",
+      "code": {
+        "repo": "Z-GCNETs/Z-GCNETs",
+        "status": "reachable_unconfirmed",
+        "note": "URL returns HTTP 200 but not confirmed as the authors' repo by search; open it once and check the README mentions Z-GCNETs / ICML 2021"
+      },
+      "reported_pems04": {
+        "mae": 19.5,
+        "rmse": 31.61,
+        "mape": 12.78
+      },
+      "verification": "paper_verified_repo_reachable_2026-10-03"
+    },
+    {
+      "id": "stgncde",
+      "order": 12,
+      "stage": 5,
+      "name": "STG-NCDE",
+      "year": 2022,
+      "venue": "AAAI 2022, vol. 36(6), pp. 6367-6374",
+      "paper": {
+        "title": "Graph Neural Controlled Differential Equations for Traffic Forecasting",
+        "first_author": "Choi",
+        "doi": "10.1609/aaai.v36i6.20587",
+        "url": "https://doi.org/10.1609/aaai.v36i6.20587"
+      },
+      "new_fa": "معادلهٔ دیفرانسیل کنترل‌شده؛ مدل پیوسته‌زمان همراه با گراف تطبیقی",
+      "weakness_fa": "آموزش کند؛ خروجی نقطه‌ای",
+      "code": {
+        "repo": "jeongwhanchoi/STG-NCDE",
+        "status": "official",
+        "note": ""
+      },
+      "reported_pems04": {
+        "mae": 19.21,
+        "rmse": 31.09,
+        "mape": 12.76
+      },
+      "verification": "verified_2026-10-03"
+    },
+    {
+      "id": "dstagnn",
+      "order": 13,
+      "stage": 5,
+      "name": "DSTAGNN",
+      "year": 2022,
+      "venue": "ICML 2022, PMLR 162:11906-11917",
+      "paper": {
+        "title": "DSTAGNN: Dynamic Spatial-Temporal Aware Graph Neural Network for Traffic Flow Forecasting",
+        "first_author": "Lan",
+        "doi": null,
+        "url": "https://proceedings.mlr.press/v162/lan22a.html"
+      },
+      "new_fa": "گراف آگاه از فضا-زمان ساخته‌شده از داده + توجه چندمقیاسی",
+      "weakness_fa": "گراف از آمار تاریخی ساخته می‌شود و در زمان اجرا ثابت می‌ماند",
+      "code": {
+        "repo": "SYLan2019/DSTAGNN",
+        "status": "official",
+        "note": ""
+      },
+      "reported_pems04": {
+        "mae": 19.3,
+        "rmse": 31.46,
+        "mape": 12.7
+      },
+      "verification": "paper_verified_repo_reachable_2026-10-03"
+    },
+    {
+      "id": "dgcrn",
+      "order": 14,
+      "stage": 5,
+      "name": "DGCRN (building block)",
+      "year": 2023,
+      "venue": "ACM TKDD (cited as ref. [6] in base paper)",
+      "paper": {
+        "title": "Dynamic Graph Convolutional Recurrent Network for Traffic Prediction: Benchmark and Solution",
+        "first_author": "Li",
+        "doi": "10.1145/3532611",
+        "url": "https://arxiv.org/abs/2104.14917"
+      },
+      "new_fa": "hypernetwork گراف پویا را در هر گام زمانی تولید می‌کند و با گراف ایستا ترکیب می‌شود",
+      "weakness_fa": "فقط خروجی نقطه‌ای؛ بدون عدم قطعیت",
+      "code": {
+        "repo": "tsinghua-fib-lab/Traffic-Benchmark",
+        "status": "official",
+        "note": "Stated in the paper abstract"
+      },
+      "reported_pems04": null,
+      "in_table2": false,
+      "verification": "verified_2026-10-03"
+    },
+    {
+      "id": "ddgcrn",
+      "order": 15,
+      "stage": 6,
+      "name": "DDGCRN",
+      "year": 2023,
+      "venue": "Pattern Recognition, vol. 142, 109670",
+      "paper": {
+        "title": "A decomposition dynamic graph convolutional recurrent network for traffic forecasting",
+        "first_author": "Weng",
+        "doi": null,
+        "url": null
+      },
+      "new_fa": "تجزیهٔ سیگنال به عادی/غیرعادی + گراف پویا بر پایهٔ سیگنال‌های متغیر با زمان",
+      "weakness_fa": "فقط زمان ورودی را می‌بیند، نه زمان هدف پیش‌بینی",
+      "code": {
+        "repo": "wengwenchao123/DDGCRN",
+        "status": "official",
+        "note": "Link given in the paper abstract"
+      },
+      "reported_pems04": {
+        "mae": 18.45,
+        "rmse": 30.51,
+        "mape": 12.19
+      },
+      "verification": "verified_2026-10-03"
+    },
+    {
+      "id": "pdg2seq",
+      "order": 16,
+      "stage": 6,
+      "name": "PDG2Seq",
+      "year": 2025,
+      "venue": "Neural Networks, vol. 183, 106941",
+      "paper": {
+        "title": "PDG2Seq: Periodic Dynamic Graph to Sequence Model for Traffic Flow Prediction",
+        "first_author": "Fan",
+        "doi": null,
+        "url": null
+      },
+      "new_fa": "ماژول انتخاب ویژگی دوره‌ای (PFSM) + PDCGRU؛ ویژگی دوره‌ای زمان هدف در دیکودر",
+      "weakness_fa": "نقطه‌ای؛ بدون کمی‌سازی عدم قطعیت",
+      "code": {
+        "repo": "wengwenchao123/PDG2Seq",
+        "status": "official",
+        "note": "Includes configs, pretrained weights and a Google Drive data package (per its README)"
+      },
+      "reported_pems04": {
+        "mae": 18.24,
+        "rmse": 30.08,
+        "mape": 12.09
+      },
+      "verification": "verified_2026-10-03"
+    },
+    {
+      "id": "dgcran",
+      "order": 17,
+      "stage": 6,
+      "name": "DGCRAN (base paper)",
+      "year": 2025,
+      "venue": "Symmetry 2025, 17(7), 1007",
+      "paper": {
+        "title": "A Traffic Flow Prediction Model Based on Dynamic Graph Convolution and Adaptive Spatial Feature Extraction",
+        "first_author": "Li",
+        "doi": "10.3390/sym17071007",
+        "url": "https://doi.org/10.3390/sym17071007"
+      },
+      "new_fa": "DGCRN (GCN پویا داخل GRU) + AGCN (گراف تطبیقی + پارامتر مخصوص گره)",
+      "weakness_fa": "خروجی نقطه‌ای، بدون UQ، بدون آزمون نویز/رویداد غیرمنتظره؛ شکاف اصلی پروپوزال شما",
+      "code": {
+        "repo": null,
+        "status": "not_released",
+        "note": "Paper's Data Availability statement says no new data; code link not given"
+      },
+      "reported_pems04": {
+        "mae": 18.12,
+        "rmse": 30.02,
+        "mape": 11.93
+      },
+      "verification": "verified_2026-10-03"
+    }
+  ]
+}
