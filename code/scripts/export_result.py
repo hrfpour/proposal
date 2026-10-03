@@ -38,8 +38,48 @@ def git_sha():
         return None
 
 
+def to_array(x):
+    """Turn whatever np.load(allow_pickle=True) returned into one float ndarray."""
+    import numpy as np
+    if hasattr(x, "detach"):                                   # torch tensor
+        return x.detach().cpu().numpy()
+    if isinstance(x, np.ndarray):
+        if x.dtype != object:
+            return x
+        if x.ndim == 0:                                         # 0-d object array wrapping something
+            return to_array(x.item())
+        return np.concatenate([to_array(e) for e in x.tolist()], axis=0)   # list of batches
+    if isinstance(x, dict):
+        if len(x) == 1:
+            return to_array(next(iter(x.values())))
+        raise ValueError(f"dict with several keys: {list(x)}")
+    if isinstance(x, (list, tuple)):
+        return np.concatenate([to_array(e) for e in x], axis=0)
+    return np.asarray(x)
+
+
+def describe(x):
+    import numpy as np
+    d = {"type": type(x).__name__}
+    if isinstance(x, np.ndarray):
+        d.update(dtype=str(x.dtype), shape=list(x.shape))
+        if x.dtype == object and x.ndim > 0 and len(x):
+            d["first_element"] = describe(x.flat[0])
+        elif x.dtype == object and x.ndim == 0:
+            d["item"] = describe(x.item())
+    elif isinstance(x, dict):
+        d["keys"] = list(x)[:10]
+    elif isinstance(x, (list, tuple)):
+        d["len"] = len(x)
+        if x:
+            d["first_element"] = describe(x[0])
+    elif hasattr(x, "shape"):
+        d["shape"] = list(x.shape)
+    return d
+
+
 def recompute(run_dir, null_val):
-    """Independent metrics from the saved arrays. Returns a dict (or {'error': ...})."""
+    """Independent metrics from the saved arrays. Never raises: returns {'error': ..., 'describe': ...}."""
     try:
         import numpy as np
     except ImportError:
@@ -47,8 +87,15 @@ def recompute(run_dir, null_val):
     d = Path(run_dir) / "test_results"
     if not (d / "prediction.npy").exists() or not (d / "targets.npy").exists():
         return {"error": "test_results/prediction.npy or targets.npy not found"}
-    p = np.load(d / "prediction.npy").astype("float64")
-    t = np.load(d / "targets.npy").astype("float64")
+    raw = {}
+    try:
+        raw["prediction"] = np.load(d / "prediction.npy", allow_pickle=True)   # our own files -> safe
+        raw["targets"] = np.load(d / "targets.npy", allow_pickle=True)
+        p = to_array(raw["prediction"]).astype("float64")
+        t = to_array(raw["targets"]).astype("float64")
+    except Exception as e:                                                      # show what the files really contain
+        return {"error": f"{type(e).__name__}: {e}",
+                "describe": {k: describe(v) for k, v in raw.items()}}
     info = {"prediction_shape": list(p.shape), "targets_shape": list(t.shape)}
     if p.shape != t.shape:
         return {**info, "error": "shape mismatch"}
@@ -149,6 +196,8 @@ def main():
             print(f"  {h}:", {k: round(x, 4) for k, x in v.items()})
     else:
         print("Recompute skipped:", rec.get("error"))
+        if rec.get("describe"):
+            print("What the .npy files contain:", json.dumps(rec["describe"]))
     print(f"epochs trained (all logs): {epochs_trained} | train time: {result['train_time_s']} s")
 
 
