@@ -10,8 +10,8 @@ Live site: https://hrfpour.github.io/proposal/  (after phase 4)
 - [x] Tag `v0-skeleton`
 
 ### Phase 1 — Literature data (no GPU)
-- [x] Fill `data/models.json` (16 models: name, year, venue, paper, new idea, weakness, repo)
-- [x] Verify every paper title and repo link by opening it
+- [ ] Fill `data/models.json` (16 models: name, year, venue, paper, new idea, weakness, repo)
+- [ ] Verify every paper title and repo link by opening it
 
 ### Phase 2 — Pipeline works end to end (first GPU use)
 - [ ] Colab notebook `00_check` : GPU visible, repo cloned, deps installed
