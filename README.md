@@ -5,9 +5,9 @@ Live site: https://hrfpour.github.io/proposal/  (after phase 4)
 ## Roadmap (tick as you go)
 
 ### Phase 0 — Setup
-- [ ] Repo created, skeleton pushed (this script)
-- [ ] Add BasicTS: `git submodule add https://github.com/zezhishao/BasicTS code/BasicTS`
-- [ ] Tag `v0-skeleton`
+- [x] Repo created, skeleton pushed (this script)
+- [x] Add BasicTS: `git submodule add https://github.com/zezhishao/BasicTS code/BasicTS`
+- [x] Tag `v0-skeleton`
 
 ### Phase 1 — Literature data (no GPU)
 - [ ] Fill `data/models.json` (16 models: name, year, venue, paper, new idea, weakness, repo)
