@@ -27,6 +27,7 @@ def main():
     ap.add_argument("--input-len", type=int, default=12)
     ap.add_argument("--output-len", type=int, default=12)
     ap.add_argument("--lr", type=float, default=0.002)
+    ap.add_argument("--seed", type=int, default=42)
     a = ap.parse_args()
 
     import numpy as np
@@ -34,8 +35,15 @@ def main():
     print("python", sys.version.split()[0], "| torch", torch.__version__,
           "| numpy", np.__version__, "| cuda", torch.cuda.is_available())
 
+    import json
     meta_path = BT / "datasets" / a.dataset / "meta.json"
     print("meta.json:", meta_path.read_text())
+    rs = json.loads(meta_path.read_text()).get("regular_settings", {})
+    norm_each_channel = rs.get("norm_each_channel", False)
+    rescale = rs.get("rescale", True)
+    null_val = rs.get("null_val", 0.0)
+    print(f"Using meta.json regular settings: norm_each_channel={norm_each_channel} "
+          f"rescale={rescale} null_val={null_val} seed={a.seed}")
     arr = np.load(BT / "datasets" / a.dataset / "train_data.npy", mmap_mode="r")
     print("train_data shape:", arr.shape)
 
@@ -72,6 +80,10 @@ def main():
         input_len=a.input_len,
         output_len=a.output_len,
         lr=a.lr,
+        seed=a.seed,
+        norm_each_channel=norm_each_channel,   # BasicTS default is True: metrics would be on the normalized scale
+        rescale=rescale,                       # BasicTS default is False: must be True to report original units
+        null_val=null_val,                     # mask zero (missing) values in the metrics, as the dataset specifies
     )
     BasicTSLauncher.launch_training(cfg)
 
