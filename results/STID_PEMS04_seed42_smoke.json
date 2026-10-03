@@ -4,7 +4,7 @@
   "seed": 42,
   "source": "reproduced",
   "status": "smoke_test",
-  "commit": "4459a7201ec4f443ce0a5113586e6ad13687b593",
+  "commit": "04f222fe10b63c64edb8bc80bfdfda0a2fec3d0e",
   "epochs_requested": 2,
   "epochs_trained": 2,
   "device": "cpu",
@@ -24,7 +24,23 @@
     "mse": 1743.0894,
     "wape": 0.641
   },
-  "horizon_metrics": {},
+  "horizon_metrics": {
+    "h3": {
+      "mae": 22.314836117723768,
+      "rmse": 35.09292948191541,
+      "mape": 0.29153787521493657
+    },
+    "h6": {
+      "mae": 26.094424146106114,
+      "rmse": 40.39132177616001,
+      "mape": 0.3122470500811987
+    },
+    "h12": {
+      "mae": 34.6492789829259,
+      "rmse": 52.118397787287996,
+      "mape": 0.37606261330199503
+    }
+  },
   "uq_metrics": {
     "picp": null,
     "mpiw": null,
@@ -32,10 +48,62 @@
   },
   "train_time_s": 13.34,
   "recomputed_from_arrays": {
-    "error": "UnpicklingError: Failed to interpret file PosixPath('/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/test_results/prediction.npy') as a pickle",
-    "describe": {}
+    "prediction_shape": [
+      3376,
+      12,
+      307
+    ],
+    "targets_shape": [
+      3376,
+      12,
+      307
+    ],
+    "file_format": "raw_float32",
+    "layout_assumed": "(samples, horizon, nodes)",
+    "null_val": 0.0,
+    "overall": {
+      "mae": 26.895219417696534,
+      "rmse": 41.9230140763743,
+      "mape": 0.3208383491518642
+    },
+    "horizons": {
+      "h3": {
+        "mae": 22.314836117723768,
+        "rmse": 35.09292948191541,
+        "mape": 0.29153787521493657
+      },
+      "h6": {
+        "mae": 26.094424146106114,
+        "rmse": 40.39132177616001,
+        "mape": 0.3122470500811987
+      },
+      "h12": {
+        "mae": 34.6492789829259,
+        "rmse": 52.118397787287996,
+        "mape": 0.37606261330199503
+      }
+    },
+    "mae_by_horizon": [
+      19.3305,
+      20.8439,
+      22.3148,
+      23.6297,
+      24.767,
+      26.0944,
+      27.5536,
+      29.0067,
+      30.1828,
+      31.5211,
+      32.8461,
+      34.6493
+    ],
+    "mae_grows_with_horizon": true
   },
-  "relative_diff_vs_basicts": null,
+  "relative_diff_vs_basicts": {
+    "mae": 0.006354232965513472,
+    "rmse": 0.004136834379017588,
+    "mape": 0.015531300546596538
+  },
   "notes": [
     "MAPE is a fraction (0.30 = 30%); multiply by 100 to compare with papers (to be confirmed by the recomputed MAPE).",
     "WAPE is not used: its value looked inconsistent with MAE (possibly computed on the normalized scale)."
