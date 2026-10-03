@@ -14,9 +14,9 @@ Live site: https://hrfpour.github.io/proposal/  (after phase 4)
 - [x] Verify every paper title and repo link by opening it
 
 ### Phase 2 — Pipeline works end to end (first GPU use)
-- [ ] Colab notebook `00_check` : GPU visible, repo cloned, deps installed
-- [ ] Download PEMS04 and PEMS08 (record version)
-- [ ] Run ONE baseline for 1-2 epochs -> one `results/*.json` file
+- [x] Colab notebook `00_check` : GPU visible, repo cloned, deps installed
+- [x] Download PEMS04 and PEMS08 (record version)
+- [x] Run ONE baseline for 1-2 epochs -> one `results/*.json` file
 - [ ] Full runs: DCRNN, AGCRN, STID (3 seeds each)
 
 ### Phase 3 — Minimum proposal prototype
