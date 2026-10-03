@@ -1,0 +1,43 @@
+{
+  "model": "STID",
+  "dataset": "PEMS04",
+  "seed": 42,
+  "source": "reproduced",
+  "status": "smoke_test",
+  "commit": "4459a7201ec4f443ce0a5113586e6ad13687b593",
+  "epochs_requested": 2,
+  "epochs_trained": 2,
+  "device": "cpu",
+  "num_parameters": 19340,
+  "run_dir": "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4",
+  "log_files": [
+    "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/training_log_20261003181707.log",
+    "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/training_log_20261003181744.log",
+    "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/training_log_20261003182205.log",
+    "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/training_log_20261003182241.log",
+    "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/training_log_20261003182858.log"
+  ],
+  "point_metrics": {
+    "mae": 26.7254,
+    "rmse": 41.7503,
+    "mape": 0.3259,
+    "mse": 1743.0894,
+    "wape": 0.641
+  },
+  "horizon_metrics": {},
+  "uq_metrics": {
+    "picp": null,
+    "mpiw": null,
+    "nll": null
+  },
+  "train_time_s": 13.34,
+  "recomputed_from_arrays": {
+    "error": "UnpicklingError: Failed to interpret file PosixPath('/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/test_results/prediction.npy') as a pickle",
+    "describe": {}
+  },
+  "relative_diff_vs_basicts": null,
+  "notes": [
+    "MAPE is a fraction (0.30 = 30%); multiply by 100 to compare with papers (to be confirmed by the recomputed MAPE).",
+    "WAPE is not used: its value looked inconsistent with MAE (possibly computed on the normalized scale)."
+  ]
+}
