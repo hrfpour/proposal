@@ -4,41 +4,37 @@
   "seed": 42,
   "source": "reproduced",
   "status": "smoke_test",
-  "commit": "04f222fe10b63c64edb8bc80bfdfda0a2fec3d0e",
+  "commit": "c626a3eeae30a417520e915f955738357de5e331",
   "epochs_requested": 2,
   "epochs_trained": 2,
   "device": "cpu",
   "num_parameters": 19340,
   "run_dir": "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4",
   "log_files": [
-    "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/training_log_20261003181707.log",
-    "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/training_log_20261003181744.log",
-    "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/training_log_20261003182205.log",
-    "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/training_log_20261003182241.log",
-    "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/training_log_20261003182858.log"
+    "/content/proposal/code/BasicTS/checkpoints/STID/PEMS04_2_12_12/e3780b6140b9c800a3d413d5b84dd7a4/training_log_20261004165447.log"
   ],
   "point_metrics": {
-    "mae": 26.7254,
-    "rmse": 41.7503,
-    "mape": 0.3259,
-    "mse": 1743.0894,
+    "mae": 26.7258,
+    "rmse": 41.7505,
+    "mape": 0.326,
+    "mse": 1743.1037,
     "wape": 0.641
   },
   "horizon_metrics": {
     "h3": {
-      "mae": 22.314836117723768,
-      "rmse": 35.09292948191541,
-      "mape": 0.29153787521493657
+      "mae": 22.315340036838705,
+      "rmse": 35.09331420113175,
+      "mape": 0.2915208514791329
     },
     "h6": {
-      "mae": 26.094424146106114,
-      "rmse": 40.39132177616001,
-      "mape": 0.3122470500811987
+      "mae": 26.09352015572972,
+      "rmse": 40.390682134882816,
+      "mape": 0.3122782709925734
     },
     "h12": {
-      "mae": 34.6492789829259,
-      "rmse": 52.118397787287996,
-      "mape": 0.37606261330199503
+      "mae": 34.64971779580002,
+      "rmse": 52.11785689679259,
+      "mape": 0.3760554239619151
     }
   },
   "uq_metrics": {
@@ -46,7 +42,7 @@
     "mpiw": null,
     "nll": null
   },
-  "train_time_s": 13.34,
+  "train_time_s": 30.26,
   "recomputed_from_arrays": {
     "prediction_shape": [
       3376,
@@ -62,47 +58,47 @@
     "layout_assumed": "(samples, horizon, nodes)",
     "null_val": 0.0,
     "overall": {
-      "mae": 26.895219417696534,
-      "rmse": 41.9230140763743,
-      "mape": 0.3208383491518642
+      "mae": 26.89571743785499,
+      "rmse": 41.92321179953604,
+      "mape": 0.3208594328010716
     },
     "horizons": {
       "h3": {
-        "mae": 22.314836117723768,
-        "rmse": 35.09292948191541,
-        "mape": 0.29153787521493657
+        "mae": 22.315340036838705,
+        "rmse": 35.09331420113175,
+        "mape": 0.2915208514791329
       },
       "h6": {
-        "mae": 26.094424146106114,
-        "rmse": 40.39132177616001,
-        "mape": 0.3122470500811987
+        "mae": 26.09352015572972,
+        "rmse": 40.390682134882816,
+        "mape": 0.3122782709925734
       },
       "h12": {
-        "mae": 34.6492789829259,
-        "rmse": 52.118397787287996,
-        "mape": 0.37606261330199503
+        "mae": 34.64971779580002,
+        "rmse": 52.11785689679259,
+        "mape": 0.3760554239619151
       }
     },
     "mae_by_horizon": [
-      19.3305,
-      20.8439,
-      22.3148,
-      23.6297,
-      24.767,
-      26.0944,
-      27.5536,
-      29.0067,
-      30.1828,
-      31.5211,
-      32.8461,
-      34.6493
+      19.3306,
+      20.8448,
+      22.3153,
+      23.63,
+      24.7682,
+      26.0935,
+      27.5543,
+      29.0077,
+      30.183,
+      31.5213,
+      32.8476,
+      34.6497
     ],
     "mae_grows_with_horizon": true
   },
   "relative_diff_vs_basicts": {
-    "mae": 0.006354232965513472,
-    "rmse": 0.004136834379017588,
-    "mape": 0.015531300546596538
+    "mae": 0.006357805485897195,
+    "rmse": 0.00413676002768922,
+    "mape": 0.015768611039657713
   },
   "notes": [
     "MAPE is a fraction (0.30 = 30%); multiply by 100 to compare with papers (to be confirmed by the recomputed MAPE).",
