@@ -22,7 +22,7 @@ Live site: https://hrfpour.github.io/proposal/  (after phase 4)
 - [ ] AGCRN + Gaussian head (mean, variance) trained with NLL
 - [ ] Add MC Dropout at test time
 - [ ] Metrics: MAE/RMSE/MAPE + PICP/MPIW/NLL
-- [ ] Write AGCRN as a BasicTS 1.0 model (BasicTS 1.0 does not include it)
+- [x] Write AGCRN as a BasicTS 1.0 model (BasicTS 1.0 does not include it)
 - [ ] Full baseline runs: STID and AGCRN, 3 seeds, PEMS04 and PEMS08, checkpoints saved on Drive
 
 ### Phase 4 — Site
