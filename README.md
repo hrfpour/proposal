@@ -24,6 +24,9 @@ Live site: https://hrfpour.github.io/proposal/  (after phase 4)
 - [ ] Metrics: MAE/RMSE/MAPE + PICP/MPIW/NLL
 - [x] Write AGCRN as a BasicTS 1.0 model (BasicTS 1.0 does not include it)
 - [ ] Full baseline runs: STID and AGCRN, 3 seeds, PEMS04 and PEMS08, checkpoints saved on Drive
+- [x] PEMS04 seed 42 (STID, AGCRN)
+- [ ] PEMS08 seed 42 (STID, AGCRN)
+- [ ] seeds 43 and 44 (both datasets)
 
 ### Phase 4 — Site
 - [ ] `web/` (Next.js static export, same recipe as atlas) reads `data/models.json` and `results/*.json`

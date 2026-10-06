@@ -1,0 +1,126 @@
+{
+    "model": {
+        "name": "STID",
+        "module": "basicts.models.STID.arch.stid_arch"
+    },
+    "dataset_name": "PEMS04",
+    "model_config": {
+        "input_len": 12,
+        "output_len": 12,
+        "num_features": 307,
+        "input_hidden_size": 32,
+        "intermediate_size": null,
+        "hidden_act": "relu",
+        "num_layers": 3,
+        "if_spatial": true,
+        "spatial_hidden_size": 32,
+        "if_time_in_day": true,
+        "if_day_in_week": true,
+        "num_time_in_day": 288,
+        "num_day_in_week": 7,
+        "tid_hidden_size": 32,
+        "diw_hidden_size": 32
+    },
+    "gpus": "0",
+    "num_epochs": 100,
+    "optimizer_params": {
+        "lr": 0.002,
+        "weight_decay": 0.0001
+    },
+    "lr_scheduler": {
+        "name": "MultiStepLR",
+        "module": "torch.optim.lr_scheduler"
+    },
+    "lr_scheduler_params": {
+        "milestones": [
+            1,
+            50,
+            80
+        ],
+        "gamma": 0.5
+    },
+    "seed": 42,
+    "norm_each_channel": false,
+    "rescale": true,
+    "null_val": 0.0,
+    "callbacks": [
+        {
+            "name": "GradientClipping",
+            "module": "basicts.runners.callback.clip_grad",
+            "params": {
+                "max_norm": 5.0
+            }
+        }
+    ],
+    "ckpt_save_dir": "/content/drive/MyDrive/proposal_ckpt/STID/PEMS04/seed42",
+    "taskflow": {
+        "name": "BasicTSForecastingTaskFlow",
+        "module": "basicts.runners.taskflow.forecasting_taskflow",
+        "params": {}
+    },
+    "gpu_num": 1,
+    "dataset_type": {
+        "name": "BasicTSForecastingDataset",
+        "module": "basicts.data.tsf_dataset"
+    },
+    "dataset_params": {
+        "input_len": 12,
+        "output_len": 12,
+        "use_timestamps": true,
+        "memmap": false,
+        "dataset_name": "PEMS04"
+    },
+    "null_to_num": 0.0,
+    "scaler": {
+        "name": "ZScoreScaler",
+        "module": "basicts.scaler.z_score_scaler"
+    },
+    "ddp_find_unused_parameters": false,
+    "compile_model": false,
+    "metrics": [
+        "MAE",
+        "MSE",
+        "RMSE",
+        "MAPE",
+        "WAPE"
+    ],
+    "target_metric": "MAE",
+    "best_metric": "min",
+    "num_steps": null,
+    "loss": "MAE",
+    "optimizer": {
+        "name": "Adam",
+        "module": "torch.optim.adam"
+    },
+    "ckpt_save_strategy": null,
+    "finetune_from": null,
+    "strict_load": true,
+    "train_batch_size": 64,
+    "train_data_prefetch": false,
+    "train_data_shuffle": true,
+    "train_data_collate_fn": null,
+    "train_data_num_workers": 0,
+    "train_data_pin_memory": false,
+    "val_batch_size": 64,
+    "val_interval": 1,
+    "val_data_prefetch": false,
+    "val_data_shuffle": false,
+    "val_data_collate_fn": null,
+    "val_data_num_workers": 0,
+    "val_data_pin_memory": false,
+    "eval_after_train": true,
+    "save_results": false,
+    "tf32": false,
+    "deterministic": false,
+    "cudnn_enabled": true,
+    "cudnn_benchmark": true,
+    "cudnn_determinstic": false,
+    "test_batch_size": 64,
+    "test_interval": 1,
+    "test_data_prefetch": false,
+    "test_data_shuffle": false,
+    "test_data_collate_fn": null,
+    "test_data_num_workers": 0,
+    "test_data_pin_memory": false,
+    "eval_horizons": null
+}
