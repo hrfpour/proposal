@@ -7,8 +7,11 @@ Run it with the Python 3.11 environment that has BasicTS' requirements, e.g. in 
 --gpus none -> CPU, --gpus 0 -> GPU 0.
 --ckpt-dir  -> where checkpoints/logs go (put it on Drive so a disconnected session can resume).
 --tiny      -> (agcrn only) hidden size 8 and 1 layer: a fast pipeline check, NOT a real baseline.
-Hyper-parameters of AGCRN = official PEMSD4/PEMSD8 configs (embed_dim 10/2, 64 units, 2 layers, cheb_k 2,
-lr 0.003, 100 epochs, early stopping patience 15, no gradient clipping).
+Hyper-parameters (checked against the official repositories):
+  AGCRN = LeiBAI/AGCRN PEMSD4/PEMSD8 conf: embed_dim 10/2, 64 units, 2 layers, cheb_k 2, Adam lr 0.003 (no weight decay),
+          100 epochs, early stopping patience 15, no gradient clipping.
+  STID  = zezhishao/STID stid/PEMS04.py: 3 layers, hidden 32, node/time-of-day/day-of-week embeddings (288 / 7),
+          Adam lr 0.002 weight decay 1e-4, MultiStepLR milestones [1, 50, 80] gamma 0.5, gradient clipping max_norm 5, 100 epochs.
 """
 import argparse
 import json
@@ -76,8 +79,10 @@ def main():
 
     from basicts.configs import BasicTSForecastingConfig
     from basicts.launcher import BasicTSLauncher
-    from basicts.runners.callback import EarlyStopping
+    from basicts.runners.callback import EarlyStopping, GradientClipping
+    from torch.optim.lr_scheduler import MultiStepLR
 
+    callbacks, scheduler, scheduler_params = [], None, None
     if a.model == "agcrn":
         from models.agcrn import AGCRN, AGCRNConfig
         units, layers = (8, 1) if a.tiny else (64, 2)
@@ -86,14 +91,25 @@ def main():
                                    embed_dim=AGCRN_EMBED_DIM.get(a.dataset, 10), rnn_units=units,
                                    num_layers=layers, cheb_k=2)
         lr = a.lr if a.lr is not None else 0.003
+        optimizer_params = {"lr": lr, "weight_decay": 0.0}          # official AGCRN: plain Adam
         patience = 15 if a.patience is None else a.patience
+        if patience > 0:
+            callbacks.append(EarlyStopping(patience=patience))
     else:
         from basicts.models.STID import STID, STIDConfig
         model_cls = STID
-        model_config = STIDConfig(input_len=a.input_len, output_len=a.output_len, num_features=num_nodes)
+        model_config = STIDConfig(input_len=a.input_len, output_len=a.output_len, num_features=num_nodes,
+                                  num_layers=3, if_time_in_day=True, if_day_in_week=True,
+                                  num_time_in_day=288, num_day_in_week=7)
         lr = a.lr if a.lr is not None else 0.002
-        patience = 0 if a.patience is None else a.patience
-    print("model:", a.model, "| lr:", lr, "| patience:", patience, "| model_config:", dict(model_config))
+        optimizer_params = {"lr": lr, "weight_decay": 1e-4}
+        scheduler, scheduler_params = MultiStepLR, {"milestones": [1, 50, 80], "gamma": 0.5}
+        callbacks.append(GradientClipping(max_norm=5.0))
+        if a.patience:
+            callbacks.append(EarlyStopping(patience=a.patience))
+    print("model:", a.model, "| optimizer_params:", optimizer_params, "| scheduler:", scheduler_params,
+          "| callbacks:", [type(c).__name__ for c in callbacks])
+    print("model_config:", dict(model_config))
 
     gpus = None if a.gpus.lower() == "none" else a.gpus
     kwargs = dict(
@@ -104,14 +120,17 @@ def main():
         num_epochs=a.epochs,
         input_len=a.input_len,
         output_len=a.output_len,
-        lr=lr,
+        optimizer_params=optimizer_params,   # explicit: BasicTS default weight_decay would be 5e-4
+        lr_scheduler=scheduler,
+        lr_scheduler_params=scheduler_params,
+        use_timestamps=True,                 # STID needs time-of-day / day-of-week; AGCRN ignores them
         seed=a.seed,
         norm_each_channel=norm_each_channel,   # BasicTS default is True -> would report normalized-scale metrics
         rescale=rescale,                       # BasicTS default is False -> must be True to report original units
         null_val=null_val,                     # mask zero (missing) values, as the dataset specifies
     )
-    if patience > 0:
-        kwargs["callbacks"] = [EarlyStopping(patience=patience)]
+    if callbacks:
+        kwargs["callbacks"] = callbacks
     if a.ckpt_dir:
         kwargs["ckpt_save_dir"] = a.ckpt_dir
     BasicTSLauncher.launch_training(BasicTSForecastingConfig(**kwargs))
