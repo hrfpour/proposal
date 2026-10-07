@@ -1,0 +1,78 @@
+[
+  {
+    "model": "AGCRN",
+    "dataset": "PEMS04",
+    "n_seeds": 3,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "mae_mean": 19.402333333333335,
+    "mae_std": 0.010748178140193304,
+    "rmse_mean": 31.207266666666666,
+    "rmse_std": 0.13413248425841165,
+    "mape_pct_mean": 13.22,
+    "mape_pct_std": 0.15132745950421403,
+    "epochs_trained_mean": 73,
+    "train_minutes_mean": 50.562222222222225,
+    "num_parameters": 748810
+  },
+  {
+    "model": "STID",
+    "dataset": "PEMS04",
+    "n_seeds": 3,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "mae_mean": 18.85203333333333,
+    "mae_std": 0.017279274676135502,
+    "rmse_mean": 30.3905,
+    "rmse_std": 0.043263495004448406,
+    "mape_pct_mean": 13.613333333333333,
+    "mape_pct_std": 0.240901086202061,
+    "epochs_trained_mean": 100,
+    "train_minutes_mean": 5.859666666666667,
+    "num_parameters": 120300
+  },
+  {
+    "model": "AGCRN",
+    "dataset": "PEMS08",
+    "n_seeds": 3,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "mae_mean": 15.837666666666667,
+    "mae_std": 0.12576988245734094,
+    "rmse_mean": 24.895633333333333,
+    "rmse_std": 0.10271325782650116,
+    "mape_pct_mean": 10.596666666666668,
+    "mape_pct_std": 0.20816659994661324,
+    "epochs_trained_mean": 100,
+    "train_minutes_mean": 36.74572222222222,
+    "num_parameters": 150112
+  },
+  {
+    "model": "STID",
+    "dataset": "PEMS08",
+    "n_seeds": 3,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "mae_mean": 14.572633333333334,
+    "mae_std": 0.022186106763768535,
+    "rmse_mean": 23.651966666666667,
+    "rmse_std": 0.013528611655795207,
+    "mape_pct_mean": 10.613333333333333,
+    "mape_pct_std": 0.10785793124909032,
+    "epochs_trained_mean": 100,
+    "train_minutes_mean": 4.6209444444444445,
+    "num_parameters": 115916
+  }
+]

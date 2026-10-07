@@ -1,0 +1,108 @@
+{
+  "model": "AGCRN",
+  "dataset": "PEMS08",
+  "seed": 44,
+  "source": "reproduced",
+  "status": "done",
+  "commit": "60527e1df7192bb88e4feb2d03bf6b6cddb6eeb3",
+  "epochs_requested": 100,
+  "epochs_trained": 100,
+  "device": "gpu",
+  "num_parameters": 150112,
+  "run_dir": "/content/drive/MyDrive/proposal_ckpt/AGCRN/PEMS08/seed44/b17e5f53b7ab9ccdd2deda28d76a21f1",
+  "log_files": [
+    "/content/drive/MyDrive/proposal_ckpt/AGCRN/PEMS08/seed44/b17e5f53b7ab9ccdd2deda28d76a21f1/training_log_20261007105845.log",
+    "/content/drive/MyDrive/proposal_ckpt/AGCRN/PEMS08/seed44/b17e5f53b7ab9ccdd2deda28d76a21f1/training_log_20261007115822.log"
+  ],
+  "point_metrics": {
+    "mae": 15.6991,
+    "rmse": 24.7777,
+    "mape": 0.1053,
+    "mse": 613.9326,
+    "wape": 0.1003
+  },
+  "horizon_metrics": {
+    "h3": {
+      "mae": 14.465556816429977,
+      "rmse": 22.67058877337178,
+      "mape": 0.09728510838856949
+    },
+    "h6": {
+      "mae": 15.519925041448458,
+      "rmse": 24.539931723628143,
+      "mape": 0.1052156740325575
+    },
+    "h12": {
+      "mae": 17.7685648954727,
+      "rmse": 27.787784219795395,
+      "mape": 0.11762981663848968
+    }
+  },
+  "uq_metrics": {
+    "picp": null,
+    "mpiw": null,
+    "nll": null
+  },
+  "train_time_s": 2227.13,
+  "recomputed_from_arrays": {
+    "prediction_shape": [
+      3549,
+      12,
+      170
+    ],
+    "targets_shape": [
+      3549,
+      12,
+      170
+    ],
+    "file_format": "raw_float32",
+    "layout_assumed": "(samples, horizon, nodes)",
+    "null_val": 0.0,
+    "overall": {
+      "mae": 15.652113128201828,
+      "rmse": 24.68466272543754,
+      "mape": 0.10526535782160815
+    },
+    "horizons": {
+      "h3": {
+        "mae": 14.465556816429977,
+        "rmse": 22.67058877337178,
+        "mape": 0.09728510838856949
+      },
+      "h6": {
+        "mae": 15.519925041448458,
+        "rmse": 24.539931723628143,
+        "mape": 0.1052156740325575
+      },
+      "h12": {
+        "mae": 17.7685648954727,
+        "rmse": 27.787784219795395,
+        "mape": 0.11762981663848968
+      }
+    },
+    "mae_by_horizon": [
+      13.3885,
+      13.9825,
+      14.4656,
+      14.8197,
+      15.157,
+      15.5199,
+      15.8849,
+      16.2397,
+      16.5664,
+      16.8338,
+      17.1991,
+      17.7686
+    ],
+    "mae_grows_with_horizon": true
+  },
+  "relative_diff_vs_basicts": {
+    "mae": 0.002992965953345851,
+    "rmse": 0.003754879369855104,
+    "mape": 0.00032898554978023014
+  },
+  "notes": [
+    "MAPE is a fraction (0.30 = 30%); multiply by 100 to compare with papers (to be confirmed by the recomputed MAPE).",
+    "WAPE is not used: its value looked inconsistent with MAE (possibly computed on the normalized scale)."
+  ]
+}
