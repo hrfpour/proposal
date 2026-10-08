@@ -36,6 +36,7 @@ class AGCRNConfig(BasicTSModelConfig):
     cheb_k: int = field(default=2, metadata={"help": "Order of the Chebyshev-style graph convolution (>= 2)."})
     input_dim: int = field(default=1, metadata={"help": "Channels per node in the input."})
     output_dim: int = field(default=1, metadata={"help": "Channels per node in the output."})
+    dropout: float = field(default=0.0, metadata={"help": "Dropout between stacked AGCRN layers (0 = off, identical to the official model)."})
 
 
 class AVWGCN(nn.Module):
@@ -82,12 +83,13 @@ class AGCRNCell(nn.Module):
 
 
 class AVWDCRNN(nn.Module):
-    def __init__(self, node_num, dim_in, dim_out, cheb_k, embed_dim, num_layers=1):
+    def __init__(self, node_num, dim_in, dim_out, cheb_k, embed_dim, num_layers=1, dropout=0.0):
         super().__init__()
         assert num_layers >= 1, "At least one DCRNN layer in the Encoder."
         self.node_num = node_num
         self.input_dim = dim_in
         self.num_layers = num_layers
+        self.drop = nn.Dropout(dropout)          # no parameters; p=0 is the identity
         self.dcrnn_cells = nn.ModuleList()
         self.dcrnn_cells.append(AGCRNCell(node_num, dim_in, dim_out, cheb_k, embed_dim))
         for _ in range(1, num_layers):
@@ -107,6 +109,8 @@ class AVWDCRNN(nn.Module):
                 state = cell(current_inputs[:, t, :, :], state, supports, prepared)
                 inner_states.append(state)
             current_inputs = torch.stack(inner_states, dim=1)
+            if i < self.num_layers - 1:
+                current_inputs = self.drop(current_inputs)
         return current_inputs                                  # outputs of the last layer: [B, T, N, hidden]
 
 
@@ -129,7 +133,7 @@ class AGCRN(nn.Module):
 
         self.node_embeddings = nn.Parameter(torch.randn(self.num_node, config.embed_dim), requires_grad=True)
         self.encoder = AVWDCRNN(self.num_node, self.input_dim, self.hidden_dim, config.cheb_k,
-                                config.embed_dim, config.num_layers)
+                                config.embed_dim, config.num_layers, config.dropout)
         # predictor
         self.end_conv = nn.Conv2d(1, self.horizon * self.output_dim, kernel_size=(1, self.hidden_dim), bias=True)
 

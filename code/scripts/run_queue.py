@@ -41,7 +41,7 @@ def run_streaming(cmd, log_path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--models", nargs="+", default=["stid", "agcrn"], choices=["stid", "agcrn"])
+    ap.add_argument("--models", nargs="+", default=["stid", "agcrn"], choices=["stid", "agcrn", "agcrn_prob"])
     ap.add_argument("--datasets", nargs="+", default=["PEMS04", "PEMS08"])
     ap.add_argument("--seeds", nargs="+", type=int, default=[42])
     ap.add_argument("--epochs", type=int, default=100)
@@ -49,7 +49,7 @@ def main():
     ap.add_argument("--ckpt-root", required=True)
     ap.add_argument("--results-dir", required=True)
     ap.add_argument("--status", default="done", help="done | smoke_test")
-    ap.add_argument("--tiny", action="store_true", help="agcrn: 8 units, 1 layer (pipeline check only)")
+    ap.add_argument("--tiny", action="store_true", help="agcrn / agcrn_prob: 8 units, 1 layer (pipeline check only)")
     ap.add_argument("--dry-run", action="store_true", help="only list the jobs and what would be skipped")
     a = ap.parse_args()
 
@@ -72,7 +72,7 @@ def main():
         ckpt = Path(a.ckpt_root) / m.upper() / d / f"seed{s}"
         cmd = [sys.executable, str(SCRIPTS / "run_forecast.py"), "--model", m, "--dataset", d,
                "--epochs", str(a.epochs), "--gpus", a.gpus, "--seed", str(s), "--ckpt-dir", str(ckpt)]
-        if a.tiny and m == "agcrn":
+        if a.tiny and m.startswith("agcrn"):
             cmd.append("--tiny")
         t0 = time.time()
         rc = run_streaming(cmd, results / "logs" / f"{stem}.log")

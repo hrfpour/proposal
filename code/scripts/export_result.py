@@ -22,6 +22,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))   # to import uq_metrics.py (same folder)
 RESULT = re.compile(r"Result <test>: \[(.*?)\]")
 TRAIN_RESULT = re.compile(r"Result <train>: \[")
 PAIR = re.compile(r"test/(\w+): ([-+0-9.eEnaif]+)")
@@ -185,6 +186,24 @@ def main():
     if rec.get("overall"):
         check = {k: abs(rec["overall"][k] - bt[k]) / max(abs(bt[k]), 1e-12) for k in bt}
 
+    uq_full, uq_error = None, None
+    lv_path = run_dir / "test_results" / "log_var.npy"
+    if lv_path.exists() and nodes:
+        try:
+            from uq_metrics import compute_uq
+            tdir = run_dir / "test_results"
+            p_arr, _ = load_array(tdir / "prediction.npy", a.output_len, nodes)
+            t_arr, _ = load_array(tdir / "targets.npy", a.output_len, nodes)
+            lv_arr, _ = load_array(lv_path, a.output_len, nodes)
+            uq_full = compute_uq(p_arr, t_arr, lv_arr, a.null_val)
+        except Exception as e:
+            uq_error = f"{type(e).__name__}: {e}"
+    uq_metrics = {"picp": None, "mpiw": None, "nll": None}
+    if uq_full:
+        uq_metrics = {"picp": uq_full["picp_95"], "mpiw": uq_full["mpiw_95"], "nll": uq_full["nll"], **uq_full}
+    elif uq_error:
+        uq_metrics["error"] = uq_error
+
     result = {
         "model": a.model, "dataset": a.dataset, "seed": a.seed,
         "source": "reproduced", "status": a.status, "commit": git_sha(),
@@ -195,7 +214,7 @@ def main():
         "point_metrics": {"mae": m["MAE"], "rmse": m["RMSE"], "mape": m["MAPE"],
                           "mse": m.get("MSE"), "wape": m.get("WAPE")},
         "horizon_metrics": {k: v for k, v in rec.get("horizons", {}).items() if v},
-        "uq_metrics": {"picp": None, "mpiw": None, "nll": None},
+        "uq_metrics": uq_metrics,
         "train_time_s": round(train_time, 2),
         "recomputed_from_arrays": rec,
         "relative_diff_vs_basicts": check,
@@ -224,6 +243,11 @@ def main():
         print("Recompute skipped:", rec.get("error"))
         if rec.get("describe"):
             print("What the .npy files contain:", json.dumps(rec["describe"]))
+    if uq_full:
+        print("UQ (95%% interval, original unit): PICP %.3f | MPIW %.2f | NLL %.3f | CRPS %.3f | ECE %.3f | PICP90 %.3f"
+              % (uq_full["picp_95"], uq_full["mpiw_95"], uq_full["nll"], uq_full["crps"], uq_full["ece"], uq_full["picp_90"]))
+    elif uq_error:
+        print("UQ metrics failed:", uq_error)
     print(f"epochs trained (all logs): {epochs_trained} | train time: {result['train_time_s']} s")
 
 

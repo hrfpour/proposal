@@ -2,6 +2,7 @@
 
 Run it with the Python 3.11 environment that has BasicTS' requirements, e.g. in Colab:
   /content/venv/bin/python code/scripts/run_forecast.py --model agcrn --dataset PEMS04 --epochs 2 --gpus none --tiny
+  /content/venv/bin/python code/scripts/run_forecast.py --model agcrn_prob --dataset PEMS04 --gpus 0   # probabilistic AGCRN (NLL)
   /content/venv/bin/python code/scripts/run_forecast.py --model agcrn --dataset PEMS04 --gpus 0 --ckpt-dir /content/drive/MyDrive/proposal_ckpt
 
 --gpus none -> CPU, --gpus 0 -> GPU 0.
@@ -46,7 +47,7 @@ def patch_zscore_scaler():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", choices=["stid", "agcrn"], default="agcrn")
+    ap.add_argument("--model", choices=["stid", "agcrn", "agcrn_prob"], default="agcrn")
     ap.add_argument("--dataset", default="PEMS04")
     ap.add_argument("--epochs", type=int, default=100)
     ap.add_argument("--gpus", default="0", help='"0" for GPU 0, "none" for CPU')
@@ -56,7 +57,8 @@ def main():
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--patience", type=int, default=None, help="early stopping patience; default 15 (agcrn), off (stid); 0 = off")
     ap.add_argument("--ckpt-dir", default=None, help="checkpoint root (e.g. a Drive folder)")
-    ap.add_argument("--tiny", action="store_true", help="agcrn: 8 units, 1 layer (pipeline check only)")
+    ap.add_argument("--tiny", action="store_true", help="agcrn / agcrn_prob: 8 units, 1 layer (pipeline check only)")
+    ap.add_argument("--dropout", type=float, default=0.0, help="agcrn / agcrn_prob: dropout between layers (0 = off)")
     a = ap.parse_args()
 
     patch_zscore_scaler()   # must run before basicts is imported
@@ -82,14 +84,21 @@ def main():
     from basicts.runners.callback import EarlyStopping, GradientClipping
     from torch.optim.lr_scheduler import MultiStepLR
 
-    callbacks, scheduler, scheduler_params = [], None, None
-    if a.model == "agcrn":
-        from models.agcrn import AGCRN, AGCRNConfig
+    callbacks, scheduler, scheduler_params, extra = [], None, None, {}
+    if a.model in ("agcrn", "agcrn_prob"):
         units, layers = (8, 1) if a.tiny else (64, 2)
-        model_cls = AGCRN
-        model_config = AGCRNConfig(input_len=a.input_len, output_len=a.output_len, num_features=num_nodes,
-                                   embed_dim=AGCRN_EMBED_DIM.get(a.dataset, 10), rnn_units=units,
-                                   num_layers=layers, cheb_k=2)
+        common = dict(input_len=a.input_len, output_len=a.output_len, num_features=num_nodes,
+                      embed_dim=AGCRN_EMBED_DIM.get(a.dataset, 10), rnn_units=units, num_layers=layers,
+                      cheb_k=2, dropout=a.dropout)
+        if a.model == "agcrn":
+            from models.agcrn import AGCRN, AGCRNConfig
+            model_cls, model_config = AGCRN, AGCRNConfig(**common)
+        else:
+            from models.agcrn_prob import (AGCRNProb, AGCRNProbConfig, ProbForecastingTaskFlow,
+                                           gaussian_nll, install_logvar_saver)
+            install_logvar_saver()                       # final test evaluation also writes test_results/log_var.npy
+            model_cls, model_config = AGCRNProb, AGCRNProbConfig(**common)
+            extra = {"loss": gaussian_nll, "taskflow": ProbForecastingTaskFlow()}   # NLL loss + log-variance in original unit
         lr = a.lr if a.lr is not None else 0.003
         optimizer_params = {"lr": lr, "weight_decay": 0.0}          # official AGCRN: plain Adam
         patience = 15 if a.patience is None else a.patience
@@ -129,6 +138,7 @@ def main():
         rescale=rescale,                       # BasicTS default is False -> must be True to report original units
         null_val=null_val,                     # mask zero (missing) values, as the dataset specifies
     )
+    kwargs.update(extra)
     if callbacks:
         kwargs["callbacks"] = callbacks
     if a.ckpt_dir:
