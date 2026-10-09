@@ -19,9 +19,9 @@ Live site: https://hrfpour.github.io/proposal/  (after phase 4)
 - [x] Run ONE baseline for 1-2 epochs -> one `results/*.json` file
 
 ### Phase 3 — Minimum proposal prototype
-- [ ] AGCRN + Gaussian head (mean, variance) trained with NLL
+- [x] AGCRN + Gaussian head (mean, variance) trained with NLL
 - [ ] Add MC Dropout at test time
-- [ ] Metrics: MAE/RMSE/MAPE + PICP/MPIW/NLL
+- [x] Metrics: MAE/RMSE/MAPE + PICP/MPIW/NLL
 - [x] Write AGCRN as a BasicTS 1.0 model (BasicTS 1.0 does not include it)
 - [x] Full baseline runs: STID and AGCRN, 3 seeds, PEMS04 and PEMS08, checkpoints saved on Drive
   - [x] PEMS04 seed 42 (STID, AGCRN)
