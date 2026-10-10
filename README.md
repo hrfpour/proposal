@@ -27,6 +27,7 @@ Live site: https://hrfpour.github.io/proposal/  (after phase 4)
   - [x] PEMS04 seed 42 (STID, AGCRN)
   - [x] PEMS08 seed 42 (STID, AGCRN)
   - [x] seeds 43 and 44 (both datasets)
+- [x] Learned variance vs constant-variance Gaussians (PEMS04, seed 42): CRPS -10.6% vs val-RMSE sigma, -4.6% vs oracle static; PICP95 0.908 (under-covers)
 
 ### Phase 4 — Site
 - [ ] `web/` (Next.js static export, same recipe as atlas) reads `data/models.json` and `results/*.json`
