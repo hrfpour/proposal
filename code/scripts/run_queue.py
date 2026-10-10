@@ -50,6 +50,9 @@ def main():
     ap.add_argument("--results-dir", required=True)
     ap.add_argument("--status", default="done", help="done | smoke_test")
     ap.add_argument("--tiny", action="store_true", help="agcrn / agcrn_prob: 8 units, 1 layer (pipeline check only)")
+    ap.add_argument("--dropout", type=float, default=0.0, help="agcrn / agcrn_prob dropout (0 = off)")
+    ap.add_argument("--mc-samples", type=int, default=0, help="agcrn_prob: MC-Dropout passes in the final evaluation")
+    ap.add_argument("--tag", default="", help="suffix of the model name, e.g. drop10 -> results AGCRN_PROB_DROP10_PEMS04_seed42")
     ap.add_argument("--dry-run", action="store_true", help="only list the jobs and what would be skipped")
     a = ap.parse_args()
 
@@ -60,7 +63,8 @@ def main():
     done, failed, t_all = [], [], time.time()
 
     for i, (m, d, s) in enumerate(jobs, 1):
-        stem = f"{m.upper()}_{d}_seed{s}{suffix}"
+        name = m.upper() + (f"_{a.tag.upper()}" if a.tag else "")
+        stem = f"{name}_{d}_seed{s}{suffix}"
         if (results / f"{stem}.json").exists():
             print(f"[{i}/{len(jobs)}] SKIP {stem} (results JSON already exists)")
             done.append(stem)
@@ -69,11 +73,15 @@ def main():
         if a.dry_run:
             continue
 
-        ckpt = Path(a.ckpt_root) / m.upper() / d / f"seed{s}"
+        ckpt = Path(a.ckpt_root) / name / d / f"seed{s}"
         cmd = [sys.executable, str(SCRIPTS / "run_forecast.py"), "--model", m, "--dataset", d,
                "--epochs", str(a.epochs), "--gpus", a.gpus, "--seed", str(s), "--ckpt-dir", str(ckpt)]
         if a.tiny and m.startswith("agcrn"):
             cmd.append("--tiny")
+        if m.startswith("agcrn") and a.dropout > 0:
+            cmd += ["--dropout", str(a.dropout)]
+        if m == "agcrn_prob" and a.mc_samples > 1:
+            cmd += ["--mc-samples", str(a.mc_samples)]
         t0 = time.time()
         rc = run_streaming(cmd, results / "logs" / f"{stem}.log")
         if rc != 0:
@@ -83,7 +91,7 @@ def main():
 
         nodes = json.loads((BT / "datasets" / d / "meta.json").read_text())["num_vars"]
         exp = [sys.executable, str(SCRIPTS / "export_result.py"), "--ckpt-root", str(ckpt),
-               "--model", m.upper(), "--dataset", d, "--seed", str(s), "--epochs", str(a.epochs),
+               "--model", name, "--dataset", d, "--seed", str(s), "--epochs", str(a.epochs),
                "--device", "cpu" if a.gpus.lower() == "none" else "gpu", "--num-nodes", str(nodes),
                "--status", a.status, "--out", str(results)]
         rc = run_streaming(exp, results / "logs" / f"{stem}_export.log")

@@ -52,6 +52,20 @@ def main():
             "num_parameters": ds[0].get("num_parameters"),
         })
 
+    uq_rows = []
+    for (model, dataset), ds in sorted(runs.items(), key=lambda kv: (kv[0][1], kv[0][0])):
+        with_uq = [d for d in ds if (d.get("uq_metrics") or {}).get("picp") is not None]
+        if not with_uq:
+            continue
+        u = lambda key: ms([d["uq_metrics"][key] for d in with_uq])
+        row = {"model": model, "dataset": dataset, "n_seeds": len(with_uq)}
+        for key in ("picp_90", "picp_95", "mpiw_95", "nll", "crps", "ece", "k95_to_nominal", "mpiw_95_scaled_to_nominal"):
+            if all(key in d["uq_metrics"] for d in with_uq):
+                row[key + "_mean"], row[key + "_std"] = u(key)
+        if all("epistemic_share" in d["uq_metrics"] for d in with_uq):
+            row["epistemic_share_mean"], row["epistemic_share_std"] = u("epistemic_share")
+        uq_rows.append(row)
+
     lines = ["| Dataset | Model | seeds | MAE | RMSE | MAPE (%) | params | min/run |", "|---|---|---|---|---|---|---|---|"]
     for r in rows:
         lines.append(f"| {r['dataset']} | {r['model']} | {r['n_seeds']} | {r['mae_mean']:.2f} ± {r['mae_std']:.2f} | "
@@ -62,6 +76,15 @@ def main():
               "| Dataset | Model | MAE | RMSE | MAPE (%) | note |", "|---|---|---|---|---|---|"]
     for (model, dataset), (a, b, c, note) in sorted(REFERENCE.items(), key=lambda kv: (kv[0][1], kv[0][0])):
         lines.append(f"| {dataset} | {model} | {a} | {b} | {c} | {note} |")
+
+    if uq_rows:
+        lines += ["", "Uncertainty (original unit; nominal PICP90 = 0.90, PICP95 = 0.95; mean ± sample std over seeds):", "",
+                  "| Dataset | Model | seeds | PICP90 | PICP95 | MPIW95 | NLL | CRPS | ECE | epistemic share |", "|---|---|---|---|---|---|---|---|---|---|"]
+        f = lambda r, k, nd=3: (f"{r[k + '_mean']:.{nd}f} ± {r[k + '_std']:.{nd}f}" if k + "_mean" in r else "-")
+        for r in uq_rows:
+            share = f"{100 * r['epistemic_share_mean']:.1f} %" if "epistemic_share_mean" in r else "-"
+            lines.append(f"| {r['dataset']} | {r['model']} | {r['n_seeds']} | {f(r, 'picp_90')} | {f(r, 'picp_95')} | "
+                         f"{f(r, 'mpiw_95', 1)} | {f(r, 'nll')} | {f(r, 'crps')} | {f(r, 'ece')} | {share} |")
 
     # claimed DGCRAN improvement over our best reproduced baseline (MAE)
     lines += ["", "Claimed DGCRAN MAE improvement over the best REPRODUCED baseline (single claim, unverified):", ""]
@@ -75,7 +98,7 @@ def main():
 
     text = "\n".join(lines)
     (RES / "summary.md").write_text(text + "\n", encoding="utf-8")
-    (RES / "summary.json").write_text(json.dumps(rows, indent=2), encoding="utf-8")
+    (RES / "summary.json").write_text(json.dumps({"point": rows, "uncertainty": uq_rows}, indent=2), encoding="utf-8")
     print(text)
     print("\nWrote results/summary.md and results/summary.json")
 

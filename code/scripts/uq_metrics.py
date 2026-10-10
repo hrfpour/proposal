@@ -6,6 +6,9 @@ compute_uq(pred, target, log_var, null_val) -> dict with
   crps                            : continuous ranked probability score (closed form for a Gaussian)
   ece                             : mean |empirical coverage - nominal level| over levels 0.05 ... 0.95 (lower = better calibrated)
   mean_sigma                      : mean predicted standard deviation
+  k95_to_nominal                  : factor k that makes the 95% interval cover exactly 95% when sigma is multiplied by k
+                                    (ORACLE diagnostic: computed on the test set itself; k > 1 = over-confident)
+  mpiw_95_scaled_to_nominal       : mean 95% width after that rescaling = sharpness at equal (nominal) coverage
   calibration                     : {"levels": [...], "coverage": [...]} for the calibration plot
   horizons                        : picp_95 / mpiw_95 / nll for horizon steps 3, 6, 12 (if arrays are 3-d)
 All arrays are in the ORIGINAL unit. Points with |target - null_val| <= 1e-5 (missing values) are ignored.
@@ -46,6 +49,10 @@ def _core(mu, y, lv):
         key = int(round(level * 100))
         out[f"picp_{key}"] = float(np.mean(abs_err <= z * sigma))
         out[f"mpiw_{key}"] = float(np.mean(2 * z * sigma))
+    z95 = _z(0.95)
+    k95 = float(np.quantile(abs_err / sigma, 0.95) / z95)
+    out["k95_to_nominal"] = k95
+    out["mpiw_95_scaled_to_nominal"] = float(np.mean(2 * z95 * k95 * sigma))
     return out, abs_err, sigma
 
 
@@ -69,6 +76,6 @@ def compute_uq(pred, target, log_var, null_val=0.0):
             if h <= pred.shape[1]:
                 m = np.abs(target[:, h - 1] - null_val) > 1e-5
                 core, _, _ = _core(pred[:, h - 1][m], target[:, h - 1][m], log_var[:, h - 1][m])
-                out["horizons"][f"h{h}"] = {k: core[k] for k in ("picp_95", "mpiw_95", "nll", "crps")}
+                out["horizons"][f"h{h}"] = {k: core[k] for k in ("picp_95", "mpiw_95", "nll", "crps", "k95_to_nominal")}
     out["n_valid"] = int(mask.sum())
     return out

@@ -196,6 +196,14 @@ def main():
             t_arr, _ = load_array(tdir / "targets.npy", a.output_len, nodes)
             lv_arr, _ = load_array(lv_path, a.output_len, nodes)
             uq_full = compute_uq(p_arr, t_arr, lv_arr, a.null_val)
+            epi_path = tdir / "epi_var.npy"                      # written by MC-Dropout runs only
+            if epi_path.exists():
+                import numpy as np
+                epi_arr, _ = load_array(epi_path, a.output_len, nodes)
+                valid = np.abs(t_arr.astype("float64") - a.null_val) > 1e-5
+                total_var = np.exp(lv_arr[valid].astype("float64"))
+                uq_full["epistemic_share"] = float(epi_arr[valid].astype("float64").mean() / total_var.mean())
+                uq_full["mean_epistemic_sigma"] = float(np.sqrt(epi_arr[valid].astype("float64")).mean())
         except Exception as e:
             uq_error = f"{type(e).__name__}: {e}"
     uq_metrics = {"picp": None, "mpiw": None, "nll": None}
@@ -246,6 +254,10 @@ def main():
     if uq_full:
         print("UQ (95%% interval, original unit): PICP %.3f | MPIW %.2f | NLL %.3f | CRPS %.3f | ECE %.3f | PICP90 %.3f"
               % (uq_full["picp_95"], uq_full["mpiw_95"], uq_full["nll"], uq_full["crps"], uq_full["ece"], uq_full["picp_90"]))
+        print("   k95 (sigma factor for exact 95%% coverage, oracle) %.3f | MPIW95 at that coverage %.2f"
+              % (uq_full["k95_to_nominal"], uq_full["mpiw_95_scaled_to_nominal"]))
+        if "epistemic_share" in uq_full:
+            print("   MC Dropout: epistemic share of the total predictive variance = %.1f %%" % (100 * uq_full["epistemic_share"]))
     elif uq_error:
         print("UQ metrics failed:", uq_error)
     print(f"epochs trained (all logs): {epochs_trained} | train time: {result['train_time_s']} s")

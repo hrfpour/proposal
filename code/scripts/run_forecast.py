@@ -9,6 +9,7 @@ Run it with the Python 3.11 environment that has BasicTS' requirements, e.g. in 
 --ckpt-dir  -> where checkpoints/logs go (put it on Drive so a disconnected session can resume).
 --tiny      -> (agcrn only) hidden size 8 and 1 layer: a fast pipeline check, NOT a real baseline.
 Hyper-parameters (checked against the official repositories):
+  AGCRN_PROB = AGCRN + a log-variance head trained with the Gaussian NLL; --dropout p --mc-samples T adds MC Dropout.
   AGCRN = LeiBAI/AGCRN PEMSD4/PEMSD8 conf: embed_dim 10/2, 64 units, 2 layers, cheb_k 2, Adam lr 0.003 (no weight decay),
           100 epochs, early stopping patience 15, no gradient clipping.
   STID  = zezhishao/STID stid/PEMS04.py: 3 layers, hidden 32, node/time-of-day/day-of-week embeddings (288 / 7),
@@ -59,6 +60,7 @@ def main():
     ap.add_argument("--ckpt-dir", default=None, help="checkpoint root (e.g. a Drive folder)")
     ap.add_argument("--tiny", action="store_true", help="agcrn / agcrn_prob: 8 units, 1 layer (pipeline check only)")
     ap.add_argument("--dropout", type=float, default=0.0, help="agcrn / agcrn_prob: dropout between layers (0 = off)")
+    ap.add_argument("--mc-samples", type=int, default=0, help="agcrn_prob: MC-Dropout passes in the final test evaluation (0 = off; needs --dropout > 0)")
     a = ap.parse_args()
 
     patch_zscore_scaler()   # must run before basicts is imported
@@ -95,9 +97,9 @@ def main():
             model_cls, model_config = AGCRN, AGCRNConfig(**common)
         else:
             from models.agcrn_prob import (AGCRNProb, AGCRNProbConfig, ProbForecastingTaskFlow,
-                                           gaussian_nll, install_logvar_saver)
-            install_logvar_saver()                       # final test evaluation also writes test_results/log_var.npy
-            model_cls, model_config = AGCRNProb, AGCRNProbConfig(**common)
+                                           gaussian_nll, install_uq_hooks)
+            install_uq_hooks()                           # final test evaluation also writes log_var.npy / epi_var.npy
+            model_cls, model_config = AGCRNProb, AGCRNProbConfig(**common, mc_samples=a.mc_samples)
             extra = {"loss": gaussian_nll, "taskflow": ProbForecastingTaskFlow()}   # NLL loss + log-variance in original unit
         lr = a.lr if a.lr is not None else 0.003
         optimizer_params = {"lr": lr, "weight_decay": 0.0}          # official AGCRN: plain Adam
